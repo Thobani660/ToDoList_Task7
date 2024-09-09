@@ -17,13 +17,13 @@ function SignUp() {
       email,
       cellphone
     };
-    axios.post('http://localhost:3001/users', userData)
-      .then((response) => {
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    axios.post('http://localhost:3000/register', userData)
+    .then((response) => {
+      console.log(response.data);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   };
 
   return (

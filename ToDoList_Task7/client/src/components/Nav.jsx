@@ -51,14 +51,14 @@ export default function Nav() {
           borderBottomRightRadius: "5px",
           padding: "15px"
         }}>Todolist</Link>
-        <Link to="/Register" className="w3-bar-item w3-button" style={{
+        <Link to="/signIn" className="w3-bar-item w3-button" style={{
           marginLeft: "10px",
           backgroundColor: "#7DF9FF",
           borderBottom: "2px solid gray",
           borderBottomLeftRadius: "5px",
           borderBottomRightRadius: "5px",
           padding: "15px"
-        }}>Register</Link>
+        }}>Sign_In</Link>
         <Link to="/SignUp" className="w3-bar-item w3-button" style={{
           marginLeft: "10px",
           backgroundColor: "#7DF9FF",
