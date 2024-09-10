@@ -104,7 +104,7 @@ function TodoList() {
       alignItems: "center",
       height: "100vh",
       marginTop: "50px",
-      marginLeft: "200px"
+      marginLeft: "-60px"
     }}>
 
       <h1 style={{color:"white"}}>Todo List</h1>
@@ -286,7 +286,7 @@ function SearchInput({ searchTerm, onChange }) {
           padding: "8px",
           width: "260px",
           marginTop: "10px",
-          border:"3px solid silver"
+          border:"3px solid purple"
         }}
       />
     </div>
@@ -306,7 +306,8 @@ function TodoInput({ value, onChange, priority, onPriorityChange, onAdd }) {
           padding: "5px",
           width: "250px",
           marginTop: "10px",
-          border:"3px solid silver"
+          border:"3px solid purple",
+          marginLeft:"135px"
 
         }}
       />

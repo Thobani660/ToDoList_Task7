@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 function SignIn() {
   const [userName, setUserName] = useState("");
@@ -61,18 +62,24 @@ function SignIn() {
           padding: "20px",
           borderRadius: "10px",
           boxShadow: "0px 0px 10px rgba(0,0,0,0.2)",
+            alignItems:"center",
+            justifyContent:"center",
+            textAlign:"center"
         }}
       >
-        <h2 style={{ textAlign: "center" }}>Sign In</h2>
+        <h2 style={{ textAlign: "center",alignItems:"center",justifyContent:"center" }}>Sign In</h2>
         <form>
           <input
             type="text"
             placeholder="UserName"
             style={{
               borderRadius: "10px",
-              border: "2px solid gray",
+              border: "2px solid purple",
               height: "40px",
               marginBottom: "20px",
+              width:"250px",
+              textAlign:"center"
+
             }}
           />
           <br />
@@ -83,18 +90,28 @@ function SignIn() {
             id=""
             style={{
               borderRadius: "10px",
-              border: "2px solid gray",
+              border: "2px solid purple",
               height: "40px",
               marginBottom: "20px",
+              width:"250px",
+              textAlign:"center"
+              
             }}
           />
-          <br />
+         
+          <h4>or</h4>
+            <Link to="SignUp">
+            <h5 style={{color:"purple"}}>forgot your password?</h5>
+            </Link>
           <button
             style={{
               borderRadius: "10px",
               padding: "5px",
-              width: "90px",
+              width: "200px",
               marginRight: "5px",
+              border: "2px solid purple",
+              textAlign:"center"
+
             }}
             onClick={handleSubmit}
           >

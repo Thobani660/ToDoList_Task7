@@ -1,14 +1,54 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 3001;
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow requests from this origin
+  credentials: true, // Allow credentials (e.g., cookies) to be sent
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
-const bcrypt = require('bcrypt');
+
+// Database setup
+const db = new sqlite3.Database('./mydatabase.db', (err) => {
+  if (err) {
+    console.error('Error opening database ' + err.message);
+  } else {
+    db.run(
+      `CREATE TABLE IF NOT EXISTS Todos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            text TEXT NOT NULL,
+            priority TEXT NOT NULL
+          )`,
+      (err) => {
+        if (err) {
+          console.error('Error creating table ' + err.message);
+        }
+      }
+    );
+
+    db.run(
+      `CREATE TABLE IF NOT EXISTS Users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            surname TEXT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+          )`,
+      (err) => {
+        if (err) {
+          console.error('Error creating Users table ' + err.message);
+        }
+      }
+    );
+  }
+});
 
 // Register a new user
 app.post('/register', async (req, res) => {
@@ -33,27 +73,34 @@ app.post('/register', async (req, res) => {
   );
 });
 
-
-// Database setup
-const db = new sqlite3.Database('./mydatabase.db', (err) => {
-  if (err) {
-    console.error('Error opening database ' + err.message);
-  } else {
-    db.run(
-      `CREATE TABLE IF NOT EXISTS Todos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            text TEXT NOT NULL,
-            priority TEXT NOT NULL
-          )`,
-      (err) => {
-        if (err) {
-          console.error('Error creating table ' + err.message);
-        }
-      }
-    );
+// Login user
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
   }
+
+  db.get('SELECT * FROM Users WHERE email = ?', [email], async (err, user) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Compare hashed passwords
+    const match = await bcrypt.compare(password, user.password);
+    if (match) {
+      res.json({ message: 'Login successful', user });
+    } else {
+      res.status(400).json({ error: 'Invalid password' });
+    }
+  });
 });
 
+// CRUD operations for Todos
 // Get all todos
 app.get('/api/todos', (req, res) => {
   db.all('SELECT * FROM Todos', [], (err, rows) => {
@@ -112,36 +159,6 @@ app.delete('/api/todos/:id', (req, res) => {
       return;
     }
     res.json({ message: `Todo with ID ${id} deleted` });
-  });
-});
-
-
-
-// login
-// Login user
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
-  }
-
-  db.get('SELECT * FROM Users WHERE email = ?', [email], async (err, user) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    // Compare hashed passwords
-    const match = await bcrypt.compare(password, user.password);
-    if (match) {
-      res.json({ message: 'Login successful', user });
-    } else {
-      res.status(400).json({ error: 'Invalid password' });
-    }
   });
 });
 
