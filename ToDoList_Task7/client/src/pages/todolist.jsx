@@ -13,10 +13,10 @@ function TodoList() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/api/todos")
+      .get("http://localhost:3001/tasks")
       .then((response) => {
-        console.log("Initial Todos:", response.data);
-        setTodos(response.data);
+        console.log("Initial Todos:", response.data.tasks);
+        setTodos(response.data.tasks);
       })
       .catch((error) => {
         console.error(error);
@@ -25,14 +25,14 @@ function TodoList() {
 
   const handleEditTodo = (index) => {
     setIsEditing(index);
-    setEditedTodo(todos[index].text);
+    setEditedTodo(todos[index].description);
     setEditedPriority(todos[index].priority);
   };
 
   const handleAddTodo = () => {
     axios
       .post("http://localhost:3001/tasks", {
-        text: newTodo,
+        description: newTodo,
         priority: priority,
       })
       .then((response) => {
@@ -45,12 +45,11 @@ function TodoList() {
         console.error("Error adding todo:", error);
       });
   };
-  
 
   const handleDeleteTodo = (index) => {
     const todoId = todos[index].id;
     axios
-      .delete(`http://localhost:3001/api/todos/${todoId}`)
+      .delete(`http://localhost:3001/tasks/${todoId}`)
       .then((response) => {
         console.log("Deleted Todo:", todos[index]);
         setTodos(todos.filter((_, i) => i !== index));
@@ -61,10 +60,10 @@ function TodoList() {
   };
 
   const handleSaveEdit = (index) => {
-    const todoId = todos[index].id; // Use the correct todo ID
+    const todoId = todos[index].id;
     axios
-      .put(`http://localhost:3001/api/todos/${todoId}`, {
-        text: editedTodo,
+      .put(`http://localhost:3001/tasks/${todoId}`, {
+        description: editedTodo,
         priority: editedPriority,
       })
       .then((response) => {
@@ -95,7 +94,7 @@ function TodoList() {
   };
 
   const filteredTodos = todos.filter((todo) =>
-    todo?.text?.toLowerCase().includes(searchTerm.toLowerCase())
+    todo?.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -171,7 +170,7 @@ function TodoList() {
                     backgroundColor: getPriorityColor(todo.priority),
                   }}
                 >
-                  {todo.text}
+                  {todo.description}
                 </div>
               )}
               {isEditing === index ? (
@@ -199,7 +198,7 @@ function TodoList() {
                     backgroundColor: getPriorityColor(todo.priority),
                   }}
                 >
-                   {todo.priority}
+                  {todo.priority}
                 </span>
               )}
               {isEditing === index ? (
@@ -258,8 +257,7 @@ function TodoList() {
   );
 }
 
-
-// search
+// Search Input Component
 function SearchInput({ searchTerm, onChange }) {
   return (
     <div>
@@ -279,7 +277,8 @@ function SearchInput({ searchTerm, onChange }) {
     </div>
   );
 }
-// input add
+
+// Todo Input Component
 function TodoInput({ value, onChange, priority, onPriorityChange, onAdd, style }) {
   return (
     <div>

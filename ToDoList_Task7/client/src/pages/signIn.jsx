@@ -8,7 +8,7 @@ function SignIn() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!username || !password) {
@@ -16,17 +16,16 @@ function SignIn() {
       return;
     }
 
-    axios.post('http://localhost:3001/signin', { username, password })
-      .then(response => {
-        console.log(response.data);
-        localStorage.setItem('token', response.data.token);
-        setMessage("Sign in successful!");
-        navigate('/tasks'); // Redirect to tasks or another protected route
-      })
-      .catch(error => {
-        console.error(error);
-        setMessage(error.response?.data?.message || "Sign in failed. Please try again.");
-      });
+    try {
+      const response = await axios.post('http://localhost:3001/api/signin', { username, password });
+      console.log(response.data);
+      localStorage.setItem('token', response.data.token);
+      setMessage("Sign in successful!");
+      navigate('/tasks'); // Redirect to tasks or another protected route
+    } catch (error) {
+      console.error(error);
+      setMessage(error.response?.data?.message || "Sign in failed. Please try again.");
+    }
   };
 
   return (

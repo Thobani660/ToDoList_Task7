@@ -5,12 +5,13 @@ function SignUp() {
   const [name, setName] = useState('');
   const [lastname, setLastname] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [cellphone, setCellphone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // Validate passwords
@@ -24,18 +25,32 @@ function SignUp() {
       password,
       name,
       lastname,
+      email,  // Ensure email is sent to the backend
       cellphone,
     };
 
-    axios.post('http://localhost:3001/register', userData)
-      .then((response) => {
-        console.log(response.data);
-        setMessage('User registered successfully!');
-      })
-      .catch((error) => {
-        console.error(error);
-        setMessage('Failed to register user. Please try again.');
-      });
+    try {
+      const response = await axios.post('http://localhost:3001/register', userData);
+      console.log(response.data);
+      setMessage('User registered successfully!');
+    } catch (error) {
+      console.error("Error:", error);
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+        setMessage(`Error: ${error.response.data.message || "Registration failed."}`);
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error("Request data:", error.request);
+        setMessage("No response from server. Please try again.");
+      } else {
+        // Something happened in setting up the request
+        console.error("Error message:", error.message);
+        setMessage("An error occurred. Please try again.");
+      }
+    }
   };
 
   return (
@@ -47,7 +62,7 @@ function SignUp() {
       borderRadius: 10,
       boxShadow: '0 0 10px rgba(122, 40, 138, 0.5)',
       backgroundColor: 'black',
-      margin: '0 auto'
+      marginLeft: "480px"
     }}>
       <h2 style={{ color: 'white' }}>Sign Up</h2>
       <div style={{
@@ -82,6 +97,15 @@ function SignUp() {
             onChange={(event) => setUsername(event.target.value)}
             name="username"
             placeholder="Username"
+            style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
+          />
+          <br />
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            name="email"
+            placeholder="Email"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
           <br />
