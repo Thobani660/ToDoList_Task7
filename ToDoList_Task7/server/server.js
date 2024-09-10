@@ -1,49 +1,53 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 
 const app = express();
-const PORT = 3001;
+const PORT = 3000; // Ensure the correct port is used
 
 // Middleware
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow requests from this origin
+  origin: 'http://localhost:5173', // Allow requests from React app
   credentials: true, // Allow credentials (e.g., cookies) to be sent
 };
+app.use(cors(corsOptions)); // Use CORS middleware
+app.use(bodyParser.json());
+app.options('*', cors(corsOptions)); // Handle preflight requests
 
-app.use(cors(corsOptions));
-app.use(express.json());
 
-// Database setup
+// Set up SQLite3 database
 const db = new sqlite3.Database('./mydatabase.db', (err) => {
   if (err) {
     console.error('Error opening database ' + err.message);
   } else {
     db.run(
-      `CREATE TABLE IF NOT EXISTS Todos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            text TEXT NOT NULL,
-            priority TEXT NOT NULL
-          )`,
+      `CREATE TABLE IF NOT EXISTS Users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        surname TEXT,
+        userId TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        cellphone TEXT,
+        password TEXT NOT NULL
+      )`,
       (err) => {
         if (err) {
-          console.error('Error creating table ' + err.message);
+          console.error('Error creating Users table ' + err.message);
         }
       }
     );
 
     db.run(
-      `CREATE TABLE IF NOT EXISTS Users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            surname TEXT,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-          )`,
+      `CREATE TABLE IF NOT EXISTS Todos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        text TEXT NOT NULL,
+        priority TEXT NOT NULL
+      )`,
       (err) => {
         if (err) {
-          console.error('Error creating Users table ' + err.message);
+          console.error('Error creating Todos table ' + err.message);
         }
       }
     );
@@ -52,51 +56,55 @@ const db = new sqlite3.Database('./mydatabase.db', (err) => {
 
 // Register a new user
 app.post('/register', async (req, res) => {
-  const { username, surname, email, password } = req.body;
-  if (!username || !email || !password) {
-    return res.status(400).json({ error: 'Username, email, and password are required' });
+  const { name, surname, userId, email, cellphone, password } = req.body;
+
+  if (!name || !email || !userId || !password) {
+    return res.status(400).json({ error: 'Name, email, userId, and password are required' });
   }
 
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  db.run(
-    'INSERT INTO Users (username, surname, email, password) VALUES (?, ?, ?, ?)',
-    [username, surname, email, hashedPassword],
-    function (err) {
-      if (err) {
-        res.status(400).json({ error: err.message });
-        return;
+    db.run(
+      'INSERT INTO Users (username, surname, userId, email, cellphone, password) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, surname, userId, email, cellphone, hashedPassword],
+      function (err) {
+        if (err) {
+          res.status(400).json({ error: err.message });
+          return;
+        }
+        res.json({ message: 'User registered successfully!', id: this.lastID });
       }
-      res.json({ id: this.lastID, username, surname, email });
-    }
-  );
+    );
+  } catch (error) {
+    res.status(500).json({ error: 'Error hashing password' });
+  }
 });
 
-// Login user
-app.post('/login', (req, res) => {
+// Sign In endpoint
+app.post('/signin', (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
-  db.get('SELECT * FROM Users WHERE email = ?', [email], async (err, user) => {
+  // Retrieve user data from the database
+  db.get('SELECT * FROM Users WHERE email = ?', [email], async (err, row) => {
     if (err) {
-      res.status(400).json({ error: err.message });
-      return;
+      return res.status(500).json({ error: err.message });
     }
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
+    if (!row) {
+      return res.status(404).json({ error: 'Email not found' });
     }
 
     // Compare hashed passwords
-    const match = await bcrypt.compare(password, user.password);
-    if (match) {
-      res.json({ message: 'Login successful', user });
-    } else {
-      res.status(400).json({ error: 'Invalid password' });
+    const match = await bcrypt.compare(password, row.password);
+    if (!match) {
+      return res.status(400).json({ error: 'Password does not match' });
     }
+
+    res.json({ message: 'Sign in successful', user: row });
   });
 });
 
