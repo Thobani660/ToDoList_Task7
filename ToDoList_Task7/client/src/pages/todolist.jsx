@@ -28,7 +28,7 @@ function TodoList() {
     setEditedTodo(todos[index].description);
     setEditedPriority(todos[index].priority);
   };
-
+  
   const handleAddTodo = () => {
     axios
       .post("http://localhost:3001/tasks", {
@@ -114,36 +114,36 @@ function TodoList() {
       <div style={{
         display: "flex",
         flexWrap: "wrap",
-        justifyContent: "center"
+        justifyContent: "center",
+        gap: "20px",
+        width: "100%",
+        padding: "10px",
+        boxSizing: "border-box",
       }}>
-        <ul style={{
-          listStyle: "none",
-          padding: 0,
-          margin: 0
-        }}>
-          {filteredTodos.map((todo, index) => (
-            <li
+        {filteredTodos.length === 0 ? (
+          <div style={{ width: "100%", textAlign: "center" }}>
+            No todos available
+          </div>
+        ) : (
+          filteredTodos.map((todo, index) => (
+            <div
               key={index}
               style={{
-                listStyle: "none",
+                border: `2px solid ${getPriorityColor(todo.priority)}`,
                 borderRadius: "5px",
-                padding: "5px",
+                padding: "10px",
                 width: "200px",
-                marginTop: "10px",
-                border: "none",
+                margin: "10px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                backgroundColor: getPriorityColor(todo.priority),
+                color: "white",
+                boxSizing: "border-box",
               }}
             >
               {isEditing === index ? (
-                <span
-                  style={{
-                    border: `2px solid ${getPriorityColor(editedPriority)}`,
-                    borderRadius: "5px",
-                    padding: "5px",
-                    width: "200px",
-                    marginTop: "10px",
-                    backgroundColor: getPriorityColor(editedPriority),
-                  }}
-                >
+                <>
                   <input
                     type="text"
                     value={editedTodo}
@@ -151,92 +151,91 @@ function TodoList() {
                     style={{
                       borderRadius: "5px",
                       padding: "5px",
-                      width: "200px",
-                      marginTop: "10px",
+                      width: "100%",
+                      marginBottom: "10px",
                       border: "none",
                     }}
                   />
-                </span>
+                  <select
+                    value={editedPriority}
+                    onChange={(e) => setEditedPriority(e.target.value)}
+                    style={{
+                      padding: "3px",
+                      border: `2px solid ${getPriorityColor(editedPriority)}`,
+                      width: "100%",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                  <button
+                    onClick={() => handleSaveEdit(index)}
+                    style={{
+                      border: "2px solid lightgrey",
+                      padding: "2.5px",
+                      borderRadius: "5px",
+                      width: "100%",
+                    }}
+                  >
+                    Save
+                  </button>
+                </>
               ) : (
-                <div
-                  style={{
-                    border: `2px solid ${getPriorityColor(todo.priority)}`,
-                    borderRadius: "5px",
-                    padding: "5px",
-                    width: "200px",
-                    color: "white",
-                    height: "20px",
-                    marginTop: "5px",
-                    backgroundColor: getPriorityColor(todo.priority),
-                  }}
-                >
-                  {todo.description}
-                </div>
+                <>
+                  <div
+                    style={{
+                      height: "40px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      width: "100%",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {todo.description}
+                  </div>
+                  <span
+                    style={{
+                      border: "2px solid",
+                      borderRadius: "5px",
+                      padding: "2px",
+                      width: "100%",
+                      textAlign: "center",
+                    }}
+                  >
+                    {todo.priority}
+                  </span>
+                  <button
+                    onClick={() => handleEditTodo(index)}
+                    style={{
+                      border: "2px solid lightgrey",
+                      padding: "2.5px",
+                      borderRadius: "5px",
+                      marginTop: "5px",
+                      width: "100%",
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTodo(index)}
+                    style={{
+                      border: "2px solid lightgrey",
+                      padding: "2.5px",
+                      borderRadius: "5px",
+                      marginTop: "5px",
+                      width: "100%",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </>
               )}
-              {isEditing === index ? (
-                <select
-                  value={editedPriority}
-                  onChange={(e) => setEditedPriority(e.target.value)}
-                  style={{
-                    padding: "3px",
-                    border: `2px solid ${getPriorityColor(editedPriority)}`,
-                  }}
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              ) : (
-                <span
-                  style={{
-                    color: "white",
-                    border: "2px solid",
-                    borderRadius: "5px",
-                    padding: "2px",
-                    width: "200px",
-                    marginTop: "10px",
-                    backgroundColor: getPriorityColor(todo.priority),
-                  }}
-                >
-                  {todo.priority}
-                </span>
-              )}
-              {isEditing === index ? (
-                <button
-                  onClick={() => handleSaveEdit(index)}
-                  style={{
-                    border: "2px solid lightgrey",
-                    padding: "2.5px",
-                    borderRadius: "5px",
-                  }}
-                >
-                  Save
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleEditTodo(index)}
-                  style={{
-                    border: "2px solid lightgrey",
-                    padding: "2.5px",
-                    borderRadius: "5px",
-                  }}
-                >
-                  Edit
-                </button>
-              )}
-              <button
-                onClick={() => handleDeleteTodo(index)}
-                style={{
-                  border: "2px solid lightgrey",
-                  padding: "2.5px",
-                  borderRadius: "5px",
-                }}
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
+            </div>
+          ))
+        )}
       </div>
       <TodoInput
         value={newTodo}
@@ -253,6 +252,7 @@ function TodoList() {
           backgroundColor: getPriorityColor(priority),
         }}
       />
+      <Footer />
     </div>
   );
 }
@@ -296,15 +296,33 @@ function TodoInput({ value, onChange, priority, onPriorityChange, onAdd, style }
           marginLeft: "135px",
         }}
       />
-      <select value={priority} onChange={onPriorityChange}>
+      <select
+        value={priority}
+        onChange={onPriorityChange}
+        style={{
+          padding: "5px",
+          marginTop: "10px",
+          border: "3px solid purple",
+          borderRadius: "5px",
+        }}
+      >
         <option value="low">Low</option>
         <option value="medium">Medium</option>
         <option value="high">High</option>
       </select>
-      <button onClick={onAdd}>Add Todo</button>
-      <div>
-        <Footer />
-      </div>
+      <button
+        onClick={onAdd}
+        style={{
+          border: "2px solid lightgrey",
+          padding: "5px",
+          borderRadius: "5px",
+          marginTop: "10px",
+          backgroundColor: "purple",
+          color: "white",
+        }}
+      >
+        Add Todo
+      </button>
     </div>
   );
 }
