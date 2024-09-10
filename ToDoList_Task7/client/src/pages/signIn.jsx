@@ -34,6 +34,7 @@ function SignIn() {
       justifyContent: "center",
       alignItems: "center",
       height: "100vh",
+      marginTop:"-150px"
     }}>
       <div style={{
         width: "300px",
