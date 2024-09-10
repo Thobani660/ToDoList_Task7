@@ -23,23 +23,29 @@ function TodoList() {
       });
   }, []);
 
+  const handleEditTodo = (index) => {
+    setIsEditing(index);
+    setEditedTodo(todos[index].text);
+    setEditedPriority(todos[index].priority);
+  };
+
   const handleAddTodo = () => {
     axios
-      .post("http://localhost:3001/api/todos", {
+      .post("http://localhost:3001/tasks", {
         text: newTodo,
         priority: priority,
       })
       .then((response) => {
         console.log("Added Todo:", response.data);
-        const updatedTodos = [...todos, response.data];
-        setTodos(updatedTodos);
+        setTodos((prevTodos) => [...prevTodos, response.data]);
         setNewTodo("");
         setPriority("low");
       })
       .catch((error) => {
-        console.error(error);
+        console.error("Error adding todo:", error);
       });
   };
+  
 
   const handleDeleteTodo = (index) => {
     const todoId = todos[index].id;
@@ -47,22 +53,17 @@ function TodoList() {
       .delete(`http://localhost:3001/api/todos/${todoId}`)
       .then((response) => {
         console.log("Deleted Todo:", todos[index]);
-        setTodos(todos.filter((todo, i) => i !== index));
+        setTodos(todos.filter((_, i) => i !== index));
       })
       .catch((error) => {
         console.error(error);
       });
   };
 
-  
-  const handleEditTodo = (index) => {
-    setIsEditing(index);
-    setEditedTodo(todos[index].text);
-    setEditedPriority(todos[index].priority);
-  };
   const handleSaveEdit = (index) => {
+    const todoId = todos[index].id; // Use the correct todo ID
     axios
-      .put(`http://localhost:3001/api/todos/${index}`, {
+      .put(`http://localhost:3001/api/todos/${todoId}`, {
         text: editedTodo,
         priority: editedPriority,
       })
@@ -92,7 +93,7 @@ function TodoList() {
         return "black";
     }
   };
-  // search
+
   const filteredTodos = todos.filter((todo) =>
     todo?.text?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -106,9 +107,7 @@ function TodoList() {
       marginTop: "50px",
       marginLeft: "-60px"
     }}>
-
-      <h1 style={{color:"white"}}>Todo List</h1>
-      {/* search  component */}
+      <h1 style={{ color: "white" }}>Todo List</h1>
       <SearchInput
         searchTerm={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
@@ -118,13 +117,11 @@ function TodoList() {
         flexWrap: "wrap",
         justifyContent: "center"
       }}>
-           <ul style={{
+        <ul style={{
           listStyle: "none",
           padding: 0,
           margin: 0
         }}>
-          {/* Map over filtered todos  */}
-
           {filteredTodos.map((todo, index) => (
             <li
               key={index}
@@ -135,7 +132,6 @@ function TodoList() {
                 width: "200px",
                 marginTop: "10px",
                 border: "none",
-                
               }}
             >
               {isEditing === index ? (
@@ -146,8 +142,7 @@ function TodoList() {
                     padding: "5px",
                     width: "200px",
                     marginTop: "10px",
-                    backgroundColor: `${getPriorityColor(editedPriority)}`
-                    
+                    backgroundColor: getPriorityColor(editedPriority),
                   }}
                 >
                   <input
@@ -160,7 +155,6 @@ function TodoList() {
                       width: "200px",
                       marginTop: "10px",
                       border: "none",
-                      // backgroundColor: `${getPriorityColor(editedPriority)}`
                     }}
                   />
                 </span>
@@ -171,18 +165,15 @@ function TodoList() {
                     borderRadius: "5px",
                     padding: "5px",
                     width: "200px",
-                    color:"white",
+                    color: "white",
                     height: "20px",
                     marginTop: "5px",
-                    backgroundColor: `${getPriorityColor(editedPriority)}`
-
+                    backgroundColor: getPriorityColor(todo.priority),
                   }}
                 >
                   {todo.text}
                 </div>
               )}
-
-              {/* priorities */}
               {isEditing === index ? (
                 <select
                   value={editedPriority}
@@ -205,19 +196,17 @@ function TodoList() {
                     padding: "2px",
                     width: "200px",
                     marginTop: "10px",
-                    backgroundColor: `${getPriorityColor(editedPriority)}`
-
+                    backgroundColor: getPriorityColor(todo.priority),
                   }}
                 >
                    {todo.priority}
                 </span>
               )}
-              {/* buttons */}
               {isEditing === index ? (
                 <button
                   onClick={() => handleSaveEdit(index)}
                   style={{
-                    border: `2px solid lightgrey`,
+                    border: "2px solid lightgrey",
                     padding: "2.5px",
                     borderRadius: "5px",
                   }}
@@ -228,7 +217,7 @@ function TodoList() {
                 <button
                   onClick={() => handleEditTodo(index)}
                   style={{
-                    border: `2px solid lightgrey`,
+                    border: "2px solid lightgrey",
                     padding: "2.5px",
                     borderRadius: "5px",
                   }}
@@ -239,7 +228,7 @@ function TodoList() {
               <button
                 onClick={() => handleDeleteTodo(index)}
                 style={{
-                  border: `2px solid lightgrey`,
+                  border: "2px solid lightgrey",
                   padding: "2.5px",
                   borderRadius: "5px",
                 }}
@@ -261,18 +250,16 @@ function TodoList() {
           borderRadius: "5px",
           padding: "5px",
           width: "200px",
-            marginLeft: "10px",
-          
-                      
-          backgroundColor: `${getPriorityColor(editedPriority)}`
-  
-
+          marginLeft: "10px",
+          backgroundColor: getPriorityColor(priority),
         }}
       />
     </div>
   );
 }
 
+
+// search
 function SearchInput({ searchTerm, onChange }) {
   return (
     <div>
@@ -286,14 +273,14 @@ function SearchInput({ searchTerm, onChange }) {
           padding: "8px",
           width: "260px",
           marginTop: "10px",
-          border:"3px solid purple"
+          border: "3px solid purple",
         }}
       />
     </div>
   );
 }
-
-function TodoInput({ value, onChange, priority, onPriorityChange, onAdd }) {
+// input add
+function TodoInput({ value, onChange, priority, onPriorityChange, onAdd, style }) {
   return (
     <div>
       <input
@@ -306,9 +293,8 @@ function TodoInput({ value, onChange, priority, onPriorityChange, onAdd }) {
           padding: "5px",
           width: "250px",
           marginTop: "10px",
-          border:"3px solid purple",
-          marginLeft:"135px"
-
+          border: "3px solid purple",
+          marginLeft: "135px",
         }}
       />
       <select value={priority} onChange={onPriorityChange}>
@@ -317,11 +303,10 @@ function TodoInput({ value, onChange, priority, onPriorityChange, onAdd }) {
         <option value="high">High</option>
       </select>
       <button onClick={onAdd}>Add Todo</button>
-        <div>
-        <Footer></Footer>
-        </div>
+      <div>
+        <Footer />
+      </div>
     </div>
-    
   );
 }
 
