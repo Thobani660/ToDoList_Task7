@@ -10,48 +10,71 @@ function SignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  const validate = () => {
+    const errors = {};
+    if (!name) errors.name = 'Name is required';
+    if (!lastname) errors.lastname = 'Lastname is required';
+    if (!email) errors.email = 'Email is required';
+    if (!cellphone) errors.cellphone = 'Cellphone number is required';
+    if (!username) errors.username = 'Username is required';
+    if (!password) errors.password = 'Password is required';
+    if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    // Validate passwords
-    if (password !== confirmPassword) {
-      setMessage('Passwords do not match.');
-      return;
-    }
-
-    const userData = {
-      username,
-      password,
-      name,
-      lastname,
-      email,  // Ensure email is sent to the backend
-      cellphone,
-    };
-
-    try {
-      const response = await axios.post('http://localhost:3001/register', userData);
-      console.log(response.data);
-      setMessage('User registered successfully!');
-    } catch (error) {
-      console.error("Error:", error);
-      if (error.response) {
-        // Server responded with a status other than 2xx
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
-        setMessage(`Error: ${error.response.data.message || "Registration failed."}`);
-      } else if (error.request) {
-        // Request was made but no response received
-        console.error("Request data:", error.request);
-        setMessage("No response from server. Please try again.");
-      } else {
-        // Something happened in setting up the request
-        console.error("Error message:", error.message);
-        setMessage("An error occurred. Please try again.");
+  
+    if (validate()) {
+      setIsLoading(true);
+      setMessage('');
+  
+      const userData = {
+        username,
+        password,
+        name,
+        lastname,
+        email,
+        cellphone,
+      };
+  
+      console.log("User Data to be sent:", userData);  // Add this log to inspect data
+  
+      try {
+        const response = await axios.post('http://localhost:3001/register', userData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log(response.data);
+        setMessage('User registered successfully! Please log in.');
+        // Clear form fields
+        setName('');
+        setLastname('');
+        setUsername('');
+        setEmail('');
+        setCellphone('');
+        setPassword('');
+        setConfirmPassword('');
+      } catch (error) {
+        console.error("Error:", error);
+        if (error.response) {
+          setMessage(`Error: ${error.response.data.message || "Registration failed."}`);
+        } else if (error.request) {
+          setMessage("No response from server. Please try again.");
+        } else {
+          setMessage("An error occurred. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
       }
     }
   };
+  
 
   return (
     <div className="sign-up" style={{
@@ -81,6 +104,7 @@ function SignUp() {
             placeholder="Name"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
+          {errors.name && <span style={{ color: "red" }}>{errors.name}</span>}
           <br />
           <input
             type="text"
@@ -90,6 +114,7 @@ function SignUp() {
             placeholder="Lastname"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
+          {errors.lastname && <span style={{ color: "red" }}>{errors.lastname}</span>}
           <br />
           <input
             type="text"
@@ -99,6 +124,7 @@ function SignUp() {
             placeholder="Username"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
+          {errors.username && <span style={{ color: "red" }}>{errors.username}</span>}
           <br />
           <input
             type="email"
@@ -108,6 +134,7 @@ function SignUp() {
             placeholder="Email"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
+          {errors.email && <span style={{ color: "red" }}>{errors.email}</span>}
           <br />
           <input
             type="tel"
@@ -117,6 +144,7 @@ function SignUp() {
             placeholder="Cellphone Number"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
+          {errors.cellphone && <span style={{ color: "red" }}>{errors.cellphone}</span>}
           <br />
           <input
             type="password"
@@ -126,6 +154,7 @@ function SignUp() {
             placeholder="Password"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
+          {errors.password && <span style={{ color: "red" }}>{errors.password}</span>}
           <br />
           <input
             type="password"
@@ -135,14 +164,16 @@ function SignUp() {
             placeholder="Confirm Password"
             style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
           />
+          {errors.confirmPassword && <span style={{ color: "red" }}>{errors.confirmPassword}</span>}
           <br />
           <input
             type="submit"
-            value="Sign Up"
-            style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
+            value={isLoading ? 'Registering...' : 'Sign Up'}
+            disabled={isLoading}
+            style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A', backgroundColor: isLoading ? '#ccc' : '#28a745', color: '#fff' }}
           />
         </form>
-        {message && <p style={{ color: 'white', marginTop: 10 }}>{message}</p>}
+        {message && <p style={{ color: message.includes('successfully') ? 'green' : 'red', marginTop: 10 }}>{message}</p>}
       </div>
     </div>
   );
