@@ -1,32 +1,39 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
-function SignIn() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const navigate = useNavigate();
+function Login({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();  
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     if (!username || !password) {
-      setMessage("Please fill in all fields.");
+      setMessage('Please fill in all fields.');
       return;
     }
-
+  
     try {
-      const response = await axios.post('http://localhost:3001/api/signin', { username, password });
-      console.log(response.data);
-      localStorage.setItem('token', response.data.token);
-      setMessage("Sign in successful!");
-      navigate('/tasks'); // Redirect to tasks or another protected route
+      const response = await axios.post('http://localhost:3001/users', { username, password });
+      console.log("Response from server:", response.data);
+  
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);  // Store JWT token
+        setMessage('Login successful!');
+        onLogin(true);  // Update parent component's login state
+        navigate('/tasks');  // Navigate to the tasks or another protected route
+      } else {
+        setMessage(response.data.message || 'Invalid credentials');
+      }
     } catch (error) {
-      console.error(error);
-      setMessage(error.response?.data?.message || "Sign in failed. Please try again.");
+      console.error("Error during login:", error);
+      setMessage(error.response?.data?.message || 'Sign in failed. Please try again.');
     }
   };
+  
 
   return (
     <section style={{
@@ -34,7 +41,7 @@ function SignIn() {
       justifyContent: "center",
       alignItems: "center",
       height: "100vh",
-      marginTop:"-150px"
+      marginTop: "-150px"
     }}>
       <div style={{
         width: "300px",
@@ -46,11 +53,11 @@ function SignIn() {
         justifyContent: "center",
         textAlign: "center"
       }}>
-        <h2>Sign In</h2>
-        <form onSubmit={handleSubmit}>
+        <h2>Log In</h2>
+        <form onSubmit={handleLogin}>
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Enter your Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             style={{
@@ -65,7 +72,7 @@ function SignIn() {
           <br />
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Enter Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={{
@@ -79,8 +86,8 @@ function SignIn() {
           />
           <br />
           <h4>or</h4>
-          <Link to="/signUp">
-            <h5 style={{ color: "purple" }}>Forgot your password?</h5>
+          <Link to="/registration">
+            <h5 style={{ color: "purple" }}>Don't have an account? Sign Up</h5>
           </Link>
           <button
             type="submit"
@@ -93,7 +100,7 @@ function SignIn() {
               textAlign: "center"
             }}
           >
-            Login
+            Submit
           </button>
         </form>
         <p>{message}</p>
@@ -102,4 +109,4 @@ function SignIn() {
   );
 }
 
-export default SignIn;
+export default Login;

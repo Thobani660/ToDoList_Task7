@@ -1,11 +1,12 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-const bcrypt = require('bcrypt'); // Don't forget to install bcrypt
-const jwt = require('jsonwebtoken'); // Don't forget to install jsonwebtoken
+const bcrypt = require('bcrypt'); // Make sure you have bcrypt installed
+const jwt = require('jsonwebtoken'); // Make sure you have jsonwebtoken installed
 
 const app = express();
 const port = 3001;
+const SECRET_KEY = "your_secret_key"; // Replace with your actual secret key
 
 app.use(cors());
 app.use(express.json());
@@ -30,7 +31,7 @@ db.serialize(() => {
       lastname TEXT,
       email TEXT UNIQUE,
       cellphone TEXT
-    )
+    );
   `);
 
   // Todos Table
@@ -41,28 +42,19 @@ db.serialize(() => {
       priority TEXT,
       user_id INTEGER,
       FOREIGN KEY(user_id) REFERENCES users(id)
-    )
+    );
   `);
-
-  // Register Table
-  db.run(`CREATE TABLE IF NOT EXISTS register (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    lastname TEXT,
-    username TEXT,
-    password TEXT,
-    cellphone TEXT
-  )`);
 });
 
 // User Registration
-app.post("/register", (req, res) => {
+app.post("/users", (req, res) => {
   const { username, password, name, lastname, email, cellphone } = req.body;
 
   if (!username || !password || !name || !lastname || !email || !cellphone) {
-    return res.status(400).json({ success: false, message: 'All fields are required' });
+    return res.status(400).json({ message: 'All fields are required' });
   }
 
+  // Hash password
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({ message: "Error hashing password." });
@@ -72,22 +64,17 @@ app.post("/register", (req, res) => {
       INSERT INTO users (username, password, name, lastname, email, cellphone)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
-
-    db.run(
-      query,
-      [username, hashedPassword, name, lastname, email, cellphone],
-      (err) => {
-        if (err) {
-          return res.status(400).json({ message: "User already exists or invalid data." });
-        }
-        res.status(201).json({ message: "User registered successfully!" });
+    db.run(query, [username, hashedPassword, name, lastname, email, cellphone], (err) => {
+      if (err) {
+        return res.status(400).json({ message: "Error creating user." });
       }
-    );
+      res.status(201).json({ message: "User registered successfully!" });
+    });
   });
 });
 
 // User Sign In
-app.post("/api/signin", (req, res) => {
+app.post("/users/signin", (req, res) => {
   const { username, password } = req.body;
 
   const query = `SELECT * FROM users WHERE username = ?`;
@@ -110,10 +97,10 @@ app.post("/api/signin", (req, res) => {
       }
 
       // Generate JWT token
-      const token = jwt.sign({ id: user.id, username: user.username }, "your_secret_key", {
+      const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, {
         expiresIn: "1h",
       });
-      res.json({ message: "Sign in successful!", token });
+      res.json({ success: true, message: "Sign in successful!", token });
     });
   });
 });
@@ -126,17 +113,15 @@ app.get('/tasks', (req, res) => {
       res.status(400).json({ error: err.message });
       return;
     }
-    res.json({
-      tasks: rows,
-    });
+    res.json({ tasks: rows });
   });
 });
 
 // Add a new todo
 app.post('/tasks', (req, res) => {
-  const { description, priority } = req.body;
-  const sql = 'INSERT INTO todos (description, priority, user_id) VALUES (?, ?, 1)'; // Assuming user_id is 1 for now
-  const params = [description, priority];
+  const { description, priority, user_id } = req.body;
+  const sql = 'INSERT INTO todos (description, priority, user_id) VALUES (?, ?, ?)';
+  const params = [description, priority, user_id];
   db.run(sql, params, function (err) {
     if (err) {
       res.status(400).json({ error: err.message });
@@ -146,6 +131,7 @@ app.post('/tasks', (req, res) => {
       id: this.lastID,
       description,
       priority,
+      user_id
     });
   });
 });
