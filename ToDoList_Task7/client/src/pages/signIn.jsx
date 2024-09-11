@@ -10,16 +10,16 @@ function Login({ onLogin }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-  
+
     if (!username || !password) {
       setMessage('Please fill in all fields.');
       return;
     }
-  
+
     try {
-      const response = await axios.post('http://localhost:3001/users', { username, password });
+      const response = await axios.post('http://localhost:3001/users/signin', { username, password });
       console.log("Response from server:", response.data);
-  
+
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);  // Store JWT token
         setMessage('Login successful!');
@@ -33,7 +33,6 @@ function Login({ onLogin }) {
       setMessage(error.response?.data?.message || 'Sign in failed. Please try again.');
     }
   };
-  
 
   return (
     <section style={{
@@ -74,6 +73,7 @@ function Login({ onLogin }) {
             type="password"
             placeholder="Enter Password"
             value={password}
+           
             onChange={(e) => setPassword(e.target.value)}
             style={{
               borderRadius: "10px",

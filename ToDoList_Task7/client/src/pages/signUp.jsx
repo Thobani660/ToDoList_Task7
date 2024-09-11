@@ -8,7 +8,6 @@ function SignUp() {
   const [email, setEmail] = useState('');
   const [cellphone, setCellphone] = useState('');
   const [password, setPassword] = useState('');
-  // const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -21,51 +20,47 @@ function SignUp() {
     if (!cellphone) errors.cellphone = 'Cellphone number is required';
     if (!username) errors.username = 'Username is required';
     if (!password) errors.password = 'Password is required';
-    // if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  if (validate()) {
-    setIsLoading(true);
-    setMessage('');
+    if (validate()) {
+      setIsLoading(true);
+      setMessage('');
 
-    const userData = {
-      username,
-      password,
-      name,
-      lastname,
-      email,
-      cellphone
-    };
+      const userData = {
+        username,
+        password,
+        name,
+        lastname,
+        email,
+        cellphone
+      };
 
-    try {
-      const response = await axios.post('http://localhost:3001/users', userData, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      console.log("Server Response:", response.data);
-      setMessage('User registered successfully! Please log in.');
-      // Clear form fields
-      setName('');
-      setLastname('');
-      setUsername('');
-      setEmail('');
-      setCellphone('');
-      setPassword('');
-      // setConfirmPassword('');
-      setErrors({});
-    } catch (error) {
-      console.error("Error:", error.response?.data || error.message || error);
-      setMessage(error.response?.data?.message || 'An error occurred.');
+      try {
+        const response = await axios.post('http://localhost:3001/users', userData, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        setMessage('User registered successfully! Please log in.');
+        // Clear form fields
+        setName('');
+        setLastname('');
+        setUsername('');
+        setEmail('');
+        setCellphone('');
+        setPassword('');
+        setErrors({});
+      } catch (error) {
+        console.error("Error:", error.response?.data || error.message || error);
+        setMessage(error.response?.data?.message || 'An error occurred.');
+      } finally {
+        setIsLoading(false);
+      }
     }
-    
-  }
-};
-
-  
+  };
 
   return (
     <div className="sign-up" style={{
@@ -149,16 +144,6 @@ function SignUp() {
           />
           {errors.password && <span style={{ color: "red" }}>{errors.password}</span>}
           <br />
-          {/* <input
-            type="password"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A' }}
-          />
-          {errors.confirmPassword && <span style={{ color: "red" }}>{errors.confirmPassword}</span>}
-          <br /> */}
           <input
             type="submit"
             value={isLoading ? 'Registering...' : 'Sign Up'}
