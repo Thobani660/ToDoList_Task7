@@ -5,11 +5,29 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"> -->
-
     <title>ToDoList_App</title>
+    <style>
+      body {
+        margin: 0; /* Add this to remove the default margin */
+        background-image: url(./src/source/forest.jfif);
+        background-repeat: no-repeat;
+        background-size: cover;
+        height: 100vh; /* Add this to set the height to 100 viewport height */
+        width: 100vw; /* Add this to set the width to 100 viewport width */
+      }
+    </style>
   </head>
-  <body >
-    <div id="root" style="background-image: url(./src/source/forest.jfif);background-repeat: no-repeate;  background-size: cover; "></div>
+  <body>
+    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Include the footer HTML file
+      const footerHtml = document.getElementById('footer');
+      footerHtml.innerHTML = '';
+      fetch('footer.html')
+        .then(response => response.text())
+        .then(html => footerHtml.innerHTML = html);
+    </script>
+    <div id="footer"></div>
   </body>
 </html>

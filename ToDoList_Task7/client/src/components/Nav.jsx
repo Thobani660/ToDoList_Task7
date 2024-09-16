@@ -11,7 +11,7 @@ export default function Nav() {
       justifyContent: "end",
       alignItems: "end",
       marginTop:"-20px",
-      marginLeft:"-7px",
+      marginLeft:"5px",
       textAlign: "end",
       display: "flex",
       width: "1440px",
@@ -28,7 +28,7 @@ export default function Nav() {
         backgroundSize: "cover",
         alignItems: "center",
         justifyContent: "center",
-        marginRight: "160px"
+        marginRight: "140px"
       }}>
       </div>
 

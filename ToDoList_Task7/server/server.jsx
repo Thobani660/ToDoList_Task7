@@ -72,6 +72,24 @@ app.post('/tasks', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+// DELETE route to delete a task by id
+app.delete('/tasks/:id', async (req, res) => {
+  const taskId = req.params.id;
+
+  try {
+    const db = await dbPromise;
+    const result = await db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 // User Registration (Signup)
 app.post('/users', async (req, res) => {

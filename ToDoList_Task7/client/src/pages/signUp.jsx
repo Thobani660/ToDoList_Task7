@@ -24,7 +24,6 @@ function SignUp() {
     return Object.keys(errors).length === 0;
   };
 
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -76,7 +75,7 @@ function SignUp() {
       marginTop: "50px"
     }}>
       <h2 style={{ color: 'white' }}>Welcome to Sign Up</h2>
-      <p style={{color:"lightgrey"}}>To register on the ToDoList_App <br />you'll need to fill in the form</p>
+      <p style={{ color: "lightgrey" }}>To register on the ToDoList_App <br />you'll need to fill in the form</p>
       <br />
       <div style={{
         padding: 20,
@@ -146,14 +145,15 @@ function SignUp() {
           />
           {errors.password && <span style={{ color: "red" }}>{errors.password}</span>}
           <br />
-          <input
+          <button
             type="submit"
-            value={isLoading ? 'Registering...' : 'Sign Up'}
+            style={{ borderRadius: 5, padding: 10, width: '100%', backgroundColor: '#7A288A', color: 'white', border: 'none' }}
             disabled={isLoading}
-            style={{ borderRadius: 5, marginTop: 10, marginBottom: 10, padding: 10, border: '2px solid #7A288A', backgroundColor: isLoading ? '#ccc' : '#28a745', color: '#fff' }}
-          />
+          >
+            {isLoading ? 'Signing up...' : 'Sign Up'}
+          </button>
+          {message && <p style={{ color: message.includes('successfully') ? 'green' : 'red', marginTop: '10px' }}>{message}</p>}
         </form>
-        {message && <p style={{ color: message.includes('successfully') ? 'green' : 'red', marginTop: 10 }}>{message}</p>}
       </div>
     </div>
   );

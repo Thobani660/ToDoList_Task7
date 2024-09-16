@@ -51,11 +51,13 @@ function TodoList() {
     axios
       .delete(`http://localhost:3001/tasks/${todoId}`)
       .then((response) => {
-        console.log("Deleted Todo:", todos[index]);
-        setTodos(todos.filter((_, i) => i !== index));
+        console.log("Deleted Todo:", response.data);
+        
+        // Update the state by filtering out the deleted todo
+        setTodos((prevTodos) => prevTodos.filter((todo, i) => i !== index));
       })
       .catch((error) => {
-        console.error(error);
+        console.error("Error deleting todo:", error);
       });
   };
 
@@ -102,7 +104,7 @@ function TodoList() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      height: "100vh",
+      height: "100%",
       marginTop: "50px",
       marginLeft: "-60px"
     }}>
@@ -252,7 +254,6 @@ function TodoList() {
           backgroundColor: getPriorityColor(priority),
         }}
       />
-      <Footer />
     </div>
   );
 }
@@ -323,6 +324,8 @@ function TodoInput({ value, onChange, priority, onPriorityChange, onAdd, style }
       >
         Add Todo
       </button>
+      <Footer id="footer" />
+
     </div>
   );
 }
