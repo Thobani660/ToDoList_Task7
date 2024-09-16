@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../source/logo.jpg'
 
 export default function Nav() {
   return (
@@ -15,12 +16,12 @@ export default function Nav() {
       display: "flex",
       width: "1440px",
       
-      zIndex: 1 // Add this to ensure the navigation bar is on top of other elements
+      // zIndex: 1 // Add this to ensure the navigation bar is on top of other elements
     }}>
       <div style={{
         width: "100px",
         height: "100px",
-        // backgroundImage: `url(${require("../source/logo.jpg")})`,
+        backgroundImage: `url(${logo})`,
         border: "2px solid gray",
         borderRadius: "100%",
         backgroundRepeat: "no-repeat",

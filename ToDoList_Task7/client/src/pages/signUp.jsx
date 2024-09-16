@@ -24,6 +24,7 @@ function SignUp() {
     return Object.keys(errors).length === 0;
   };
 
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -74,7 +75,9 @@ function SignUp() {
       marginRight: "auto",
       marginTop: "50px"
     }}>
-      <h2 style={{ color: 'white' }}>Sign Up</h2>
+      <h2 style={{ color: 'white' }}>Welcome to Sign Up</h2>
+      <p style={{color:"lightgrey"}}>To register on the ToDoList_App <br />you'll need to fill in the form</p>
+      <br />
       <div style={{
         padding: 20,
         border: '2px solid #7A288A',

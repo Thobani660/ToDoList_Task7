@@ -1,11 +1,14 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = 3001;
+const SECRET_KEY = "your_jwt_secret_key"; // Add a strong secret key
 
 // Middleware
 app.use(cors());
@@ -17,7 +20,7 @@ const dbPromise = open({
   driver: sqlite3.Database
 });
 
-// Initialize database and create table if not exists
+// Initialize database and create tables if not exists
 async function initDb() {
   const db = await dbPromise;
   await db.exec(`
@@ -25,13 +28,21 @@ async function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       description TEXT NOT NULL,
       priority TEXT NOT NULL
-    )
+    );
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      lastname TEXT NOT NULL,
+      username TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      cellphone TEXT NOT NULL
+    );
   `);
 }
 
 initDb();
 
-// Routes
+// Routes for tasks
 app.get('/tasks', async (req, res) => {
   try {
     const db = await dbPromise;
@@ -45,6 +56,9 @@ app.get('/tasks', async (req, res) => {
 
 app.post('/tasks', async (req, res) => {
   const { description, priority } = req.body;
+  if (!description || !priority) {
+    return res.status(400).send('Description and priority are required');
+  }
   try {
     const db = await dbPromise;
     const result = await db.run(
@@ -59,35 +73,53 @@ app.post('/tasks', async (req, res) => {
   }
 });
 
-app.put('/tasks/:id', async (req, res) => {
-  const { id } = req.params;
-  const { description, priority } = req.body;
+// User Registration (Signup)
+app.post('/users', async (req, res) => {
+  const { username, password, name, lastname, cellphone } = req.body;
+  if (!username || !password || !name || !lastname || !cellphone) {
+    return res.status(400).json({ success: false, message: 'All fields are required' });
+  }
+
   try {
     const db = await dbPromise;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const result = await db.run(
-      'UPDATE tasks SET description = ?, priority = ? WHERE id = ?',
-      [description, priority, id]
+      'INSERT INTO users (username, password, name, lastname, cellphone) VALUES (?, ?, ?, ?, ?)',
+      [username, hashedPassword, name, lastname, cellphone]
     );
-    if (result.changes === 0) {
-      return res.status(404).send('Task Not Found');
-    }
-    const updatedTask = { id, description, priority };
-    res.json(updatedTask);
+
+    res.status(201).json({ success: true, message: 'Registration successful', id: result.lastID });
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
+    if (error.code === 'SQLITE_CONSTRAINT') {
+      res.status(400).json({ success: false, message: 'Username already exists' });
+    } else {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+    }
   }
 });
 
-app.delete('/tasks/:id', async (req, res) => {
-  const { id } = req.params;
+// User Login
+app.post('/users/login', async (req, res) => {
+  const { username, password } = req.body;
+
   try {
     const db = await dbPromise;
-    const result = await db.run('DELETE FROM tasks WHERE id = ?', [id]);
-    if (result.changes === 0) {
-      return res.status(404).send('Task Not Found');
+    const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid username or password' });
     }
-    res.send('Task Deleted');
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      return res.status(400).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+    res.json({ success: true, message: 'Login successful', token });
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');

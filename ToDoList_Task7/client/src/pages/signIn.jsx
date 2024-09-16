@@ -89,7 +89,7 @@ function SignIn({ onLogin }) {
           />
           <br />
           <h4>or</h4>
-          <Link to="/registration">
+          <Link to="/signUp">
             <h5 style={{ color: "purple" }}>Don't have an account? Sign Up</h5>
           </Link>
           <button
