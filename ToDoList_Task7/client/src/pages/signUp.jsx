@@ -45,7 +45,6 @@ function SignUp() {
           headers: { 'Content-Type': 'application/json' }
         });
         setMessage('User registered successfully! Please log in.');
-        // Clear form fields
         setName('');
         setLastname('');
         setUsername('');

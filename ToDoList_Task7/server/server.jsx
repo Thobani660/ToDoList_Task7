@@ -1,56 +1,99 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const bodyParser = require('body-parser');
-const cors = require('cors');
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
 const app = express();
-const PORT = 3001;
+const port = 3001;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize SQLite Database
-const db = new sqlite3.Database(':memory:', (err) => {
-  if (err) {
-    console.error('Error opening database ' + err.message);
-  } else {
-    db.run(
-      `CREATE TABLE users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT NOT NULL,
-          email TEXT NOT NULL UNIQUE,
-          password TEXT NOT NULL
-        )`,
-      (err) => {
-        if (err) {
-          console.error('Error creating table', err.message);
-        } else {
-          console.log('Connected to the in-memory SQlite database.');
-        }
-      }
+// Database setup
+const dbPromise = open({
+  filename: './database.db',
+  driver: sqlite3.Database
+});
+
+// Initialize database and create table if not exists
+async function initDb() {
+  const db = await dbPromise;
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      description TEXT NOT NULL,
+      priority TEXT NOT NULL
+    )
+  `);
+}
+
+initDb();
+
+// Routes
+app.get('/tasks', async (req, res) => {
+  try {
+    const db = await dbPromise;
+    const tasks = await db.all('SELECT * FROM tasks');
+    res.json({ tasks });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/tasks', async (req, res) => {
+  const { description, priority } = req.body;
+  try {
+    const db = await dbPromise;
+    const result = await db.run(
+      'INSERT INTO tasks (description, priority) VALUES (?, ?)',
+      [description, priority]
     );
+    const newTask = { id: result.lastID, description, priority };
+    res.status(201).json(newTask);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
   }
 });
 
-// Signup Route
-app.post('/users', (req, res) => {
-  const { username, email, password } = req.body;
-  
-  if (!username || !email || !password) {
-    return res.status(400).json({ success: false, message: 'All fields are required.' });
-  }
-  
-  const query = `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`;
-  db.run(query, [username, email, password], function (err) {
-    if (err) {
-      return res.status(400).json({ success: false, message: err.message });
+app.put('/tasks/:id', async (req, res) => {
+  const { id } = req.params;
+  const { description, priority } = req.body;
+  try {
+    const db = await dbPromise;
+    const result = await db.run(
+      'UPDATE tasks SET description = ?, priority = ? WHERE id = ?',
+      [description, priority, id]
+    );
+    if (result.changes === 0) {
+      return res.status(404).send('Task Not Found');
     }
-    res.status(201).json({ success: true, message: 'User registered successfully!' });
-  });
+    const updatedTask = { id, description, priority };
+    res.json(updatedTask);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.delete('/tasks/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = await dbPromise;
+    const result = await db.run('DELETE FROM tasks WHERE id = ?', [id]);
+    if (result.changes === 0) {
+      return res.status(404).send('Task Not Found');
+    }
+    res.send('Task Deleted');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });

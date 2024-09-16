@@ -20,7 +20,7 @@ export default function Nav() {
       <div style={{
         width: "100px",
         height: "100px",
-        backgroundImage: `url(${require("../source/logo.jpg")})`,
+        // backgroundImage: `url(${require("../source/logo.jpg")})`,
         border: "2px solid gray",
         borderRadius: "100%",
         backgroundRepeat: "no-repeat",

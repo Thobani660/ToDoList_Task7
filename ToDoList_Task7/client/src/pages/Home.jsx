@@ -27,7 +27,7 @@ export default function Home() {
                     <button style={{borderRadius:"10px",padding:"5px",width:"90px"}}>register</button>
                     </Link>
                 </div>
-                <div style={{width:"900px",opacity:"0.5",backgroundImage:`url(${require("../source/logo.jpg")})`,backgroundRepeat:"no-repeat",backgroundSize:"cover",height:"500px",backgroundColor:"pink",marginLeft:"50px",marginTop:"-10px",borderRadius:"10px",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
+                <div style={{width:"900px",opacity:"0.5",backgroundRepeat:"no-repeat",backgroundSize:"cover",height:"500px",backgroundColor:"pink",marginLeft:"50px",marginTop:"-10px",borderRadius:"10px",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
                <h1>To Do List Ui</h1>
 
                 </div>

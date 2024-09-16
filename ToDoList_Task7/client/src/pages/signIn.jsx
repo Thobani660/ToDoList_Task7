@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 
-function Login({ onLogin }) {
+function SignIn({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate();  
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,8 +17,9 @@ function Login({ onLogin }) {
       return;
     }
 
+    setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/users/signin', { username, password });
+      const response = await axios.post('http://localhost:3001/users/login', { username, password });
       console.log("Response from server:", response.data);
 
       if (response.data.success) {
@@ -31,6 +33,8 @@ function Login({ onLogin }) {
     } catch (error) {
       console.error("Error during login:", error);
       setMessage(error.response?.data?.message || 'Sign in failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,7 +77,6 @@ function Login({ onLogin }) {
             type="password"
             placeholder="Enter Password"
             value={password}
-           
             onChange={(e) => setPassword(e.target.value)}
             style={{
               borderRadius: "10px",
@@ -99,14 +102,15 @@ function Login({ onLogin }) {
               border: "2px solid purple",
               textAlign: "center"
             }}
+            disabled={isLoading}
           >
-            Submit
+            {isLoading ? 'Logging in...' : 'Submit'}
           </button>
         </form>
-        <p>{message}</p>
+        {message && <p style={{ color: message.includes('successful') ? 'green' : 'red', marginTop: "10px" }}>{message}</p>}
       </div>
     </section>
   );
 }
 
-export default Login;
+export default SignIn;
