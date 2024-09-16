@@ -3,10 +3,9 @@
 <h2 > To-Do List application with user authentication and CRUD functionalities.
 </br>
 </h2>
-<p>Login Page
-Users can log in with their credentials.
-2. Registration Page
-New users can register with the following details:
+<p>
+1.Login Page- Users can log in with their credentials.
+2. Registration Page-New users can register with the following details:
 Username
 Password
 3. Home Page
@@ -27,10 +26,8 @@ Use colours to represent priority levels:
 Red for High
 Yellow for Medium
 Green for Low
-General Requirements
-Implement CRUD (Create, Read, Update, Delete) operations for to-do list items.
-Use SQLite to store user information and to-do list items.</p>
-server hide
+
+<h1>server hide</h1>
 Install : Express,Cors,Sqlite3,Nodemone, and axios
-client side 
+<h1>client side</h1> 
 Install : Axios,require,Router Dom, vite
